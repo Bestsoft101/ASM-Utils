@@ -1,5 +1,6 @@
 package b100.utils.asm;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
@@ -150,6 +151,16 @@ public class FindInstruction {
 		if(node instanceof VarInsnNode) {
 			VarInsnNode node1 = (VarInsnNode) node;
 			return node1.var == var;
+		}
+		return false;
+	}
+	
+	/**
+	 * Check if the given instruction has any of the RETURN opcodes
+	 */
+	public static boolean returnInsn(AbstractInsnNode node) {
+		if(node != null) {
+			return node.getOpcode() >= Opcodes.IRETURN && node.getOpcode() <= Opcodes.RETURN;
 		}
 		return false;
 	}
