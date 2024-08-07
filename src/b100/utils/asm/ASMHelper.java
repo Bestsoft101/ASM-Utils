@@ -320,7 +320,7 @@ public abstract class ASMHelper {
 	public static void insertBeforeLastReturn(InsnList instructions, InsnList insert) {
 		AbstractInsnNode returnNode = findInstruction(instructions.getLast(), true, (n) -> FindInstruction.returnInsn(n));
 		
-		insert.insertBefore(returnNode, insert);
+		instructions.insertBefore(returnNode, insert);
 	}
 
 	//////////////////////////////////////////
