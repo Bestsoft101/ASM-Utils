@@ -144,6 +144,76 @@ public class InjectHelper {
 		return insert;
 	}
 	
+	/**
+	 * <code>
+	 * <br>	listenerMethodName(this, args...);
+	 * <code>
+	 */
+	public InsnList createMethodCall(ClassNode classNode, MethodNode method, String listenerMethodName) {
+		InsnList insert = new InsnList();
+		
+		// Create descriptor of listener method for method call
+		StringBuilder listenerMethodDesc = new StringBuilder();
+		listenerMethodDesc.append('(');
+		if(!Modifier.isStatic(method.access)) {
+			listenerMethodDesc.append('L');
+			listenerMethodDesc.append(classNode.name);
+			listenerMethodDesc.append(';');
+		}
+		listenerMethodDesc.append(method.desc.substring(1, method.desc.indexOf(')')));
+		listenerMethodDesc.append(")V");
+
+		// Call listener method
+		int parameterIndex = 0;
+		if(!Modifier.isStatic(method.access)) {
+			insert.add(new VarInsnNode(Opcodes.ALOAD, parameterIndex++));
+		}
+		
+		try {
+			StringReader reader = new StringReader(method.desc);
+			reader.expectAndSkip('(');
+			
+			while(true) {
+				char c = reader.getAndSkip();
+				if(c == ')') {
+					break;
+				}
+				
+				boolean isArray = false;
+				while(c == '[') {
+					isArray = true;
+					c = reader.getAndSkip();
+				}
+				
+				// TODO add all possible types
+				int opcode;
+				if(c == 'I' || c == 'Z') {
+					opcode = Opcodes.ILOAD;
+				}else if(c == 'F' || c == 'D') {
+					opcode = Opcodes.FLOAD;
+				}else if(c == 'L') {
+					opcode = Opcodes.ALOAD;
+					reader.readUntilCharacter(';');
+					reader.next();
+				}else {
+					throw new InvalidCharacterException(reader);
+				}
+				
+				if(isArray) {
+					opcode = Opcodes.ALOAD;
+				}
+				
+				insert.add(new VarInsnNode(opcode, parameterIndex++));
+			}
+		}catch (RuntimeException e) {
+			throw new RuntimeException("Invalid method descriptor '" + method.desc + "' ?", e);
+		}
+		
+		insert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listenerClass, listenerMethodName, listenerMethodDesc.toString()));
+		
+		return insert;
+	}
+	
 	private static String getCallbackInfoClass() {
 		String thisClass = InjectHelper.class.getName().replace('.', '/');
 		
