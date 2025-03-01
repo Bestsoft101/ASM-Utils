@@ -362,6 +362,23 @@ public abstract class ASMHelper {
 	
 	//////////////////////////////////////////
 	
+	public static void makePublic(MethodNode methodNode) {
+		methodNode.access = makePublic(methodNode.access);
+	}
+	
+	public static void makePublic(FieldNode fieldNode) {
+		fieldNode.access = makePublic(fieldNode.access);
+	}
+	
+	public static int makePublic(int access) {
+		access |= Opcodes.ACC_PUBLIC;
+		access &= ~Opcodes.ACC_PRIVATE;
+		access &= ~Opcodes.ACC_PROTECTED;
+		return access;
+	}
+	
+	//////////////////////////////////////////
+	
 	public static Map<Label, String> generateLabelNames(MethodNode methodNode) {
 		return generateLabelNames(methodNode.instructions);
 	}
